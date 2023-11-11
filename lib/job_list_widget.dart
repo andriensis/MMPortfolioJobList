@@ -2,11 +2,12 @@ library mmjoblist;
 
 import 'package:flutter/material.dart';
 
-import 'model/job_model.dart';
+import 'components/timeline_element.dart';
+import 'model/timeline_model.dart';
 
 class MMJobListWidget extends StatefulWidget {
 
-  final List<JobModel> jobList;
+  final List<TimelineJobModel> jobList;
 
   const MMJobListWidget({super.key, required this.jobList});
 
@@ -17,31 +18,38 @@ class MMJobListWidget extends StatefulWidget {
 }
 
 class MMJobListWidgetState extends State<MMJobListWidget> with SingleTickerProviderStateMixin {
+
+  late Animation<double> animation;
+  late AnimationController controller;
+
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
-      child: SizedBox(
-        height: double.infinity,
-        child: PageView.builder(
-          controller: PageController(viewportFraction: 0.8),
-          itemBuilder: (BuildContext context, int itemIndex) {
-            return _buildCarouselItem(context);
-          },
-        ),
-      ),
+  void initState() {
+    super.initState();
+    controller = AnimationController(
+        duration: const Duration(milliseconds: 1500),
+        vsync: this
     );
+    controller.forward();
   }
 
-  Widget _buildCarouselItem(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.grey,
-          borderRadius: BorderRadius.all(Radius.circular(16.0)),
-        ),
-      ),
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: widget.jobList.length,
+      itemBuilder: (_, index) {
+        return TimelineElement(
+          model: widget.jobList[index],
+          firstElement: index == 0,
+          lastElement: widget.jobList.length==index+1,
+          controller: controller,
+        );
+      },
     );
   }
 }
